@@ -47,10 +47,22 @@ The project consists of four services orchestrated by Docker Compose:
 
     This command will build the Docker images and start all the services in the background.
 
+    **Note on `sudo`:** If you encounter a `permission denied` error when running `docker-compose`, you may need to run the command with `sudo`:
+
+    ```bash
+    sudo docker-compose up -d --build
+    ```
+
+    This is because the Docker daemon might be configured to only be accessible by the `root` user or users in the `docker` group.
+
 3.  **Check the status of the containers:**
 
     ```bash
     docker-compose ps
+    ```
+    or if you used `sudo` to start the containers:
+    ```bash
+    sudo docker-compose ps
     ```
 
     You should see four containers running: `fastapi_celery_project_web_1`, `fastapi_celery_project_worker_1`, `fastapi_celery_project_redis_1`, and `fastapi_celery_project_rabbitmq_1`.
@@ -115,4 +127,8 @@ To stop the application, run:
 
 ```bash
 docker-compose down
+```
+or if you used `sudo`:
+```bash
+sudo docker-compose down
 ```
