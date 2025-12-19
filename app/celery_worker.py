@@ -1,11 +1,16 @@
 import time
+import os
 from celery import Celery
+
+# Get broker and backend URLs from environment variables, with defaults for local development
+BROKER_URL = os.environ.get("CELERY_BROKER_URL", "amqp://user:password@localhost:5672//")
+BACKEND_URL = os.environ.get("CELERY_RESULT_BACKEND", "redis://localhost:6379/0")
 
 # Configure Celery
 celery_app = Celery(
     'tasks',
-    broker='amqp://user:password@localhost:5672//',
-    backend='redis://localhost:6379/0'
+    broker=BROKER_URL,
+    backend=BACKEND_URL
 )
 
 @celery_app.task
