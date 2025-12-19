@@ -1,6 +1,20 @@
 # FastAPI, Celery, Redis, and RabbitMQ Learning Project
 
-This project is a simple demonstration of how to integrate FastAPI with Celery for background task processing. RabbitMQ is used as the message broker and Redis is used as the result backend.
+This project is a simple demonstration of how to integrate FastAPI with Celery for background task processing. RabbitMQ is used as the message broker, and Redis is used as the result backend. The entire application is containerized using Docker.
+
+## Prerequisites
+
+*   Docker
+*   Docker Compose
+
+## Architecture
+
+The project consists of four services orchestrated by Docker Compose:
+
+*   **`web`**: A FastAPI application that provides the API endpoints to create and check tasks.
+*   **`worker`**: A Celery worker that executes the background tasks.
+*   **`rabbitmq`**: The message broker that passes task messages from the `web` service to the `worker`.
+*   **`redis`**: The result backend that stores the results of the tasks.
 
 ## Project Structure
 
@@ -10,6 +24,7 @@ This project is a simple demonstration of how to integrate FastAPI with Celery f
 |   |-- __init__.py
 |   |-- main.py       # FastAPI application
 |   |-- celery_worker.py # Celery app and task definitions
+|-- Dockerfile
 |-- docker-compose.yml
 |-- requirements.txt
 |-- README.md
@@ -17,50 +32,30 @@ This project is a simple demonstration of how to integrate FastAPI with Celery f
 
 ## How to Run
 
-### 1. Start Infrastructure
+1.  **Clone the repository:**
 
-First, start the Redis and RabbitMQ services using Docker Compose.
+    ```bash
+    git clone <repository-url>
+    cd fastapi_celery_project
+    ```
 
-```bash
-cd fastapi_celery_project
-docker-compose up -d
-```
+2.  **Start the application:**
 
-You can check the status of the containers with `docker-compose ps`.
-The RabbitMQ Management UI will be available at [http://localhost:15672](http://localhost:15672) (user: `user`, pass: `password`).
+    ```bash
+    docker-compose up -d --build
+    ```
 
-### 2. Set up Python Environment
+    This command will build the Docker images and start all the services in the background.
 
-It is recommended to use a virtual environment.
+3.  **Check the status of the containers:**
 
-```bash
-cd fastapi_celery_project
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-```
+    ```bash
+    docker-compose ps
+    ```
 
-### 3. Run the Celery Worker
+    You should see four containers running: `fastapi_celery_project_web_1`, `fastapi_celery_project_worker_1`, `fastapi_celery_project_redis_1`, and `fastapi_celery_project_rabbitmq_1`.
 
-Open a new terminal, navigate to the project directory, activate the virtual environment, and start the Celery worker.
-
-```bash
-cd fastapi_celery_project
-source venv/bin/activate
-celery -A app.celery_worker worker --loglevel=info
-```
-
-### 4. Run the FastAPI Application
-
-Open another new terminal, navigate to the project directory, activate the virtual environment, and start the FastAPI server using Uvicorn.
-
-```bash
-cd fastapi_celery_project
-source venv/bin/activate
-uvicorn app.main:app --reload
-```
-
-The API will be available at [http://localhost:8000](http://localhost:8000).
+The API will be available at [http://localhost:8000](http://localhost:8000). The RabbitMQ Management UI will be available at [http://localhost:15672](http://localhost:15672) (user: `user`, pass: `password`).
 
 ## How to Use
 
@@ -90,9 +85,10 @@ Use the `task_id` to check the status of the task.
 curl http://localhost:8000/tasks/some-unique-task-id
 ```
 
-Initially, the status will be `PENDING`. After 5 seconds, the task will complete and the status will be `SUCCESS`.
+Initially, the status will be `PENDING`. After 5 seconds, the task will complete, and the status will be `SUCCESS`.
 
 **Pending:**
+
 ```json
 {
   "task_id": "some-unique-task-id",
@@ -103,6 +99,7 @@ Initially, the status will be `PENDING`. After 5 seconds, the task will complete
 ```
 
 **Success:**
+
 ```json
 {
   "task_id": "some-unique-task-id",
@@ -110,4 +107,12 @@ Initially, the status will be `PENDING`. After 5 seconds, the task will complete
   "result": 12,
   "error": null
 }
+```
+
+## Stopping the Application
+
+To stop the application, run:
+
+```bash
+docker-compose down
 ```
